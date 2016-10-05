@@ -11,40 +11,47 @@ public class main {
     public static void main (String [] args){
 
         Scanner in = new Scanner(System.in);
-        String userInput = in.nextLine();
-        // String[] expression = userInput.split("[-+]");
-        
-        // [coefficients]
-        // [powers]
-        // double[][] parsedExpression = new double[2][expression.length]; 
+        String userInput = in.nextLine().replaceAll("\\s*","");
 
         if(userInput.charAt(0) != '-'){ // if initial is not a negative, it must be positive
             userInput = "+" + userInput;
         }
 
-        Pattern pattern = Pattern.compile("(?:([+-])([\\d\\.]*)x(?:\\^([-]?[\\d\\.]+))?)"); // pattern and on
-        Matcher patternMatcher = pattern.matcher(userInput);
-        boolean first = true; // first in output
-        while(patternMatcher.find()){
-            double coefficient = Double.parseDouble(patternMatcher.group(2));
-            double power = 0; //if power is nonexistant then it's 0 
-            // String sign = patternMatcher.group(1);
-            boolean sign = (patternMatcher.group(1).equals("+") && power > 0); // true if positive, false if negative
+        // 1st capturing group [+-] matches signs
+        // 2nd capturing group [\\d\\.]* matches coefficient
+        // 3rd capturing group ?:\\^([-]?[\\d\\.]+) matches minus sign if present and power
+        Pattern polynomials = Pattern.compile("(?:([+-])([\\d\\.]*)x(?:\\^([-]?[\\d\\.]+))?)"); // pattern and on
+        Matcher polynomialsMatcher = polynomials.matcher(userInput);
 
-            if(patternMatcher.group(3) != null)
-                power = Double.parseDouble(patternMatcher.group(3));
+        boolean first = true; // only for first in output, since it can't have + in front
+        while(polynomialsMatcher.find()){ // for all matches, return output
+
+            // Sets coefficient to user input if exists (2nd capturing group).
+            // Otherwise, set to 1
+            double coefficient = 1; // default
+            if(polynomialsMatcher.group(2) != null && polynomialsMatcher.group(2).length() > 0)
+                coefficient = Double.parseDouble(polynomialsMatcher.group(2));
+
+            // Sets power to user input if exists (3rd capturing group).
+            // Otherwise, set to 1
+            double power = 1; //if power is nonexistant then it's 1 
+            if(polynomialsMatcher.group(3) != null)
+                power = Double.parseDouble(polynomialsMatcher.group(3));
+
+            // for result: true if positive, false if negative (takes into account sign of power)
+            boolean outputSign = (polynomialsMatcher.group(1).equals("+") && power >= 0); 
 
             double outputCoefficient = coefficient * power;
             double outputPower = power - 1;
 
-            if(!sign){ // if negative
+            if(!outputSign){ // if negative
                 System.out.print("- ");
-            } else if(!first && sign){ // if not first and positive
+            } else if(!first && outputSign){ // if not first and positive
                 System.out.print("+ ");
             }
-            if (power == 1){
+            if (outputPower == 1){
                 System.out.print(outputCoefficient + "x ");
-            } else if (power == 0){
+            } else if (outputPower == 0){
                 System.out.print(outputCoefficient + " ");
             } else {
                 System.out.print(outputCoefficient + "x^" + outputPower + " ");
@@ -53,55 +60,5 @@ public class main {
             if(first)
                 first = !first; // not first anymore
         }
-
-        // unneccessary because will be 0 anyways
-        // 
-        // Pattern third = Pattern.compile("(?:([+-])([\\d\\.]*))");
-        // Matcher thirdMatcher = third.matcher(userInput);
-        // while(thirdMatcher.find()){
-        //     System.out.println(secondMatcher.group(1));
-        // }
-
-        // parse
-        // for(int i = 0; i < expression.length; i++){
-        //     if (expression[i].contains("x^")) { // for polynomials powers of two or greater
-
-        //         // regex for format __x^__
-        //         Pattern polynomials = Pattern.compile("([\\d\\.]*)x\\^([\\d\\.]+)");
-        //         Matcher matcher = polynomials.matcher(expression[i]);
-        //         matcher.find(); // finds match
-        //         double coefficient = 1; 
-        //         if(matcher.group(1).length() != 0)
-        //             coefficient = Double.parseDouble(matcher.group(1)); // sets value to coefficient
-        //         double power = Double.parseDouble(matcher.group(2)); // sets value to power
-        //         parsedExpression[0][i] = coefficient * power;
-        //         parsedExpression[1][i] = power - 1;
-
-        //     } else if (expression[i].contains("x")) { //for polynomials power 1
-                
-        //         // regex for format __x^__
-        //         Pattern polynomials = Pattern.compile("([\\d\\.]*)x");
-        //         Matcher matcher = polynomials.matcher(expression[i]);
-        //         matcher.find(); // finds match
-        //         double coefficient = 1; 
-        //         if(matcher.group(1).length() != 0)
-        //             coefficient = Double.parseDouble(matcher.group(1)); // sets value to coefficient
-        //         parsedExpression[0][i] = coefficient; // sets value to coefficient
-        //         parsedExpression[1][i] = 0; // sets value to 0. (implied)
-        //         if(matcher.group(1).length() == 0)
-        //             parsedExpression[0][i] = 1; // sets coefficient to 1 in case group 1 is 0.
-
-        //     } else { // for constants
-        //         parsedExpression[0][i] = 0;
-        //         parsedExpression[1][i] = 0;
-        //         // parsedExpression[0][i] = Double.parseDouble(expression[i]);
-        //     }
-        // }
-
-        // // print
-        // for(int i = 0; i < parsedExpression[0].length; i++){
-        //     if(parsedExpression[0][i] != 0)
-        //     System.out.print(parsedExpression[0][i] + "x^" + parsedExpression[1][i]+ " + ");
-        // }
     }
 }
